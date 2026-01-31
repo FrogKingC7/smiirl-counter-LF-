@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>YouTube Subs JSON</title>
+</head>
+<body>
+<pre id="subscriber-count" style="white-space:pre-wrap;"></pre>
+<script>
+(async function(){
+    const channelId = 'UC2rKAYNeUL89NSWusliXX-Q';
+    const apiKey = 'AIzaSyC5LHoN4TFZxF3nrV-eLSKpjgel6JR3Q4w';
+    const out = document.getElementById('subscriber-count');
+
+    function writeJson(obj){
+        // Ensure only JSON text is written
+        out.textContent = JSON.stringify(obj);
+    }
+
+    try{
+        const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`;
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            // include status for debugging
+            writeJson({ error: true, status: resp.status, message: resp.statusText });
+            return;
+        }
+        const data = await resp.json();
+        // validate structure
+        if (!data.items || !data.items[0] || !data.items[0].statistics || typeof data.items[0].statistics.subscriberCount === 'undefined'){
+            writeJson({ error: true, message: 'Unexpected API response structure', raw: data });
+            return;
+        }
+        const count = data.items[0].statistics.subscriberCount;
+        writeJson({ number: String(count) });
+    } catch (err){
+        writeJson({ error: true, message: err.message });
+    }
+})();
+</script>
+</body>
+</html>
